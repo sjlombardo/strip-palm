@@ -1,0 +1,99 @@
+  Strip v2.0 AES (Secure Tool for Recalling Important Passwords)
+    Copyright(C) 1999-2001, Stephen J Lombardo, All rights reserved.
+
+##############
+# INTRO      #
+##############
+Strip (Secure Tool for Recalling Important Passwords) is a password 
+and account manager for the Palm(T) Computing Platform. It was designed 
+to fit the demanding needs of IT professionals, but it is useful for 
+anyone who needs to remember passwords, pin numbers, alarm codes, 
+or any other collection of ID/Key pairs.   
+
+Strip uses strong encryption to safeguard your data.  Before any account 
+information is stored to the palm's internal databases it is encrypted 
+using the AES(Rinjdael) algorithms. Strip uses SHA-256 for key generation. 
+
+####################
+# GETTING STARTED  #
+####################
+If you are upgrading from a previous version of Strip please
+read the README.upgrade file. Upgrades to Strip 2.0 are only possible from Strip 1.0.
+Users of older versions should upgrade to 1.0 before insalling this version.
+ 
+If this is the first time you are using Strip all you need to do to
+get started is to install the Strip.prc file using the palm install tool.
+The first time you tap the Strip icon on your palm you will be prompted to enter
+a password. This will become the initial system password, however
+this password can be changed at any later date.  Whenever you 
+run Strip from that point on you will be prompted to enter your password.
+DO NOT FORGET YOUR PASSWORD!!!! Once data is entered into Strip it is 
+encrypted before it even touches the palm databases. If you forget your
+password you are out of luck. 
+
+##############
+# WHATS NEW  #
+##############
+This is Strip v2.0. This version of Strip is both a bug-fix and a 
+new feature release.
+Added Features:
+-  Complete redesign of the Strip interface to allow for simpler
+   navigation and more popular "style" for palm applications
+-  New Icons and screen arrangements
+
+Bug Fixes:
+-  Fixes to random password generation on Treo devices
+-  Enabled form element navigation on devices with a 5-way button
+   like the Treo
+  
+#################
+# DISTRIBUTIONS #
+#################
+If you recieved this file in a package from Zetetic Enterprises 
+(www.zetetic.net) you will have one of these distributions:
+
+1) Source distribution.
+Assuming that you have the gcc palm development kit installed 
+you can compile Strip from source:
+
+	cd strip_x.x.x/src/Strip
+	./configure
+	make
+
+You can also build StripCS from source:
+	cd strip_x.x.x/src/Strip
+	./configure
+	make clean  #this is required to remove dependent files from other dir's
+	make
+
+You will end up with a file called Strip.prc or StripCS.prc that can be
+installed directly onto your palm pilot. 
+
+There is already a pre-compiled Strip.prc included with the source
+distribution in case you downloaded the source distribution but you  
+don't have the developers kit. 
+
+2) Binary distribution.
+If you have downloaded this version all you need to do is install the file 
+Strip.prc (and/or StripCS.prc) onto your palm pilot. It is pre-compiled. 
+
+
+##############
+# Disclaimer #
+##############
+Strip is distributed with NO WARRANTY. 
+Strip's security is at MOST as secure as the SHA-256 message digest and 
+the AES (Rinjdael) iterated block cypher algorithm in CBS mode. The
+author makes NO WARRANTY or claim of security of the algorithms, 
+implementations, or Strip itself.
+Furthermore the author claims NO RESPONSIBLITY for loss of data, theft of data, 
+or any other loss that might occur due to the use of this program.
+For more information see the LICENSE file included with this distribution.
+
+##############
+# LICENSE    #
+##############
+Strip is distributed under the terms of the GPL. See the file LICENSE for more information,
+or go to http://www.gnu.org/copyleft/  .
+
+

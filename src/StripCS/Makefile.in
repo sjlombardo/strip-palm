@@ -1,0 +1,76 @@
+PACKAGE		=@PACKAGE@
+VERSION		=@VERSION@
+
+TYPE		=@TYPE@
+
+APP		=StripCS
+ICONTEXT 	="StripCS"
+APPID 		=SJLM
+
+PRC 		=$(APP).prc
+RCP		=$(APP).rcp
+SRC		=$(APP).c
+
+CRYPTDIR	=../Crypto
+STRIPDIR	=../Strip
+
+DEBUG		= #-DDEBUG
+DEFINES		=@DEFINES@
+INCLUDES	= -I $(CRYPTDIR) -I $(STRIPDIR)
+CFLAGS		= -O2 -Werror -Wall -DNOMULTISEG 
+
+GCC		=@GCC@
+PILRC		=@PILRC@
+OBJRES		=@OBJRES@
+BUILD_PRC	=@BUILD_PRC@
+
+PILOT_XFER	=@PILOT_XFER@
+CTAGS		=@CTAGS@
+AUTOCONF	=@AUTOCONF@
+
+CC      =$(GCC) $(DEBUG) $(INCLUDES) $(DEFINES)   
+
+OTHERFILES      =$(CRYPTDIR)/md5_palm_driver.c $(CRYPTDIR)/tw.c $(CRYPTDIR)/tw_driver_cs.c $(CRYPTDIR)/idea.c \
+		$(CRYPTDIR)/idea_driver_cs.c $(CRYPTDIR)/des_palm_driver_cs.c $(CRYPTDIR)/rijndael-256.c \
+		$(CRYPTDIR)/rijndael_driver.c $(CRYPTDIR)/rijndael_cbc.c convert.c \
+		$(CRYPTDIR)/sha256_driver.c $(CRYPTDIR)/random.c $(CRYPTDIR)/sha256.c \
+		$(STRIPDIR)/account_hash.c $(STRIPDIR)/storage_util.c
+
+OBJS = ${SRC:.c=.o} ${OTHERFILES:.c=.o}
+	
+all:		$(PRC)
+
+
+ifeq ($(TYPE),palmos-coff)
+$(PRC): code.stamp rcp.stamp
+	$(BUILD_PRC) $@ $(ICONTEXT) $(APPID) *.$(APP).grc *.bin
+	ls -l *.prc
+else
+$(PRC): $(APP) rcp.stamp
+	$(BUILD_PRC) $@ $(ICONTEXT) $(APPID) $(APP) *.bin
+	ls -l *.prc
+endif
+
+code.stamp: $(APP)
+	$(OBJRES) $(APP)
+	touch $@
+
+
+rcp.stamp: $(RCP)
+	$(PILRC) -q $^ $(BINDIR) 
+	@touch $@
+
+
+$(APP): $(OBJS)
+	$(CC) $(OBJS) -o $@
+
+depend dep: ;
+	$(CC) -M $(SRC) > .depend
+
+clean:
+	rm -rf $(OBJS) $(APP) *.bin *.grc *.prc *.stamp *~ *.BAK
+
+distclean: clean
+	rm -f Makefile config.* .depend
+
+-include .depend

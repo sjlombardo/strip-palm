@@ -1,0 +1,768 @@
+//  Program : STRIP (Secure Tool for Recalling Important Passwords) 
+//  Description: A secure password and account manager for the Palm(t) Computing Platform 
+//  Copyright (C) 1999  Stephen J Lombardo
+//  
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  
+//  STRIP has been written and developed by Stephen J Lombardo (Zetetic Enterprises) 1999
+//  
+//  Contact Info:
+//  lombardos@zetetic.net
+//  http://www.zetetic.net/
+//  Zetetic Enterprises
+//  348 Wasington Ave 
+//  Clifton NJ, 07011
+//  
+//  Bug reports and feature requests should be sent to bugs@zetetic.net.
+//  
+
+//------Idea block encryption---------------------------------------
+//STRIP uses the Idea block encryption algoritm, Copyright (C) Ascom. All rights reserved.
+//Idea is a patented algorithm. It is free for non commercial use, if you wish to use 
+//this product or the Idea algorithm in general for commercial purposes, you must purchase a license
+//from Ascom at http://www.ascom.ch/infosec/idea/pricing.html
+//-----------------------------------------------------------------------
+
+//        <**  DO NOT EXPORT **>
+//STRIP uses strong cryptography. "Idea" is a block algoritm with a
+//128 bit key length, and "MD5" creates a 128 bit message digest. In the 
+//United states it is currently illegal to export products describing
+//or incorporating encryption techniques with key lengths greater
+//than 40 bits. It is therefore illegal to export this program in
+//any format. Please dont get the government on my back...
+//  
+//  
+// keyboard shortcuts for account handling added by bret musser,
+// palm@bret.musser.com, 2/19/2001.  also renamed some menu items
+// that were misnamed (eg 'beam account' should have been 'beam category')
+// also used system default edit menu ids (undo,copy,paste,etc) and got rid
+// of basic event handlers for those
+
+GENERATEHEADER "StripRsc.h"
+#include "StripRsc.h"
+#define	kFrmNavHeaderFlagsObjectFocusStartState  0x00000001
+#define	kFrmNavHeaderFlagsAppFocusStartState     0x00000002
+
+MENU ID EditMenuID
+BEGIN
+   Pulldown "Account"
+   Begin
+      MenuItem "Attach Note..."    id EditAddNote "A"
+      MenuItem "Generate Password..."    id EditGenPW   "W"
+   End
+
+   Pulldown "Edit"
+   Begin
+      MenuItem "Undo"           id EditUndo "U"
+      MenuItem "Cut"            id EditCut "X"
+      MenuItem "Copy"           id EditCopy "C"
+      MenuItem "Paste"          id EditPaste "P"
+      MenuItem "Select All"     id EditSelectAll "S"
+      MenuItem "-"              id EditSeparator
+      MenuItem "Keyboard"       id EditKeyboard "K"
+      MenuItem "Graffiti"       id EditGrafitti "G"
+   End
+
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "About... " ID AboutMe
+    END
+END
+
+MENU ID EditOnlyMenuID
+BEGIN
+   Pulldown "Edit"
+   Begin
+      MenuItem "Undo"           id EditUndo "U"
+      MenuItem "Cut"            id EditCut "X"
+      MenuItem "Copy"           id EditCopy "C"
+      MenuItem "Paste"          id EditPaste "P"
+      MenuItem "Select All"     id EditSelectAll "S"
+      MenuItem "-"              id EditSeparator
+      MenuItem "Keyboard"       id EditKeyboard "K"
+      MenuItem "Graffiti"       id EditGrafitti "G"
+   End
+
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "About... " ID AboutMe
+    END
+END
+
+MENU ID SystemMenuID
+BEGIN
+    PULLDOWN "App"
+    BEGIN
+        MENUITEM "New System " ID NewSysPull "N"
+    END
+
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "Accounting... " ID AppInfo "I"
+        MENUITEM "Change Password... " ID ChPass "W"
+        MENUITEM "Regen. Signatures..." ID RegenAllHashes "T"
+        MENUITEM "Preferences... " ID PrefMenu "R"
+        MENUITEM "Registration... " ID RegMenu "R"
+        MENUITEM "-" AUTOID
+        MENUITEM "About... " ID AboutMe 
+    END
+END
+
+MENU ID AccountMenuID
+BEGIN
+    PULLDOWN "App"
+    BEGIN
+        MENUITEM "New Account... " ID NewAccPull "N"
+        MENUITEM "-" AUTOID
+        MENUITEM "New Category " ID NewSysPull "N"
+        MENUITEM "Edit Category... " ID EditSysPull "E"
+        MENUITEM "Beam Category... " ID BeamSysPull "B"
+    END
+
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "Accounting..." ID AppInfo "I"
+        MENUITEM "Change Password... " ID ChPass "W"
+        MENUITEM "Regen. Signatures..." ID RegenAllHashes "T"
+        MENUITEM "Preferences... " ID PrefMenu "R"
+        MENUITEM "Registration... " ID RegMenu "R"
+        MENUITEM "-" AUTOID
+        MENUITEM "About... " ID AboutMe
+    END
+END
+
+MENU ID ShowMenuID
+BEGIN
+    PULLDOWN "App"
+    BEGIN
+        MENUITEM "Edit Account... " ID EditAccPull "E"
+        MENUITEM "Beam Account... " ID BeamAccPull "B"
+        MENUITEM "Account Info... " ID AccountInfo "I"
+        MENUITEM "Regnerate Signature... " ID RegenAccountHash "T"
+    END
+
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "Preferences... " ID PrefMenu "R"
+        MENUITEM "-" AUTOID
+        MENUITEM "About... " ID AboutMe
+    END
+END
+
+MENU ID PasswordMenuID
+BEGIN
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "About... " ID AboutMe
+    END
+END
+
+FORM ID StripSystemForm AT (0 0 160 160)
+MENUID SystemMenuID
+BEGIN
+    TITLE "Category List"
+    LIST "" ID SystemList AT (2 20 156 121) USABLE  FONT 0 
+    BUTTON "New" ID NewSystem AT (center 147 auto auto) FONT 0
+END
+
+NAVIGATION ID StripSystemForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID SystemList
+    NAVIGATIONMAP
+	ROW 	SystemList
+	ROW 	NewSystem
+    END
+
+FORM ID makeNewSystem AT (2 80 156 78)
+HELPID systemHelp
+MENUID EditMenuID
+MODAL
+BEGIN
+    TITLE "Enter New Category"
+    LABEL "Name:" AUTOID AT (5 20) FONT 1
+    FIELD ID addSystemName AT (prevleft prevbottom+1 145 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 28
+    BUTTON "OK" ID addSystemOk AT (5 60 auto auto) FONT 0
+    BUTTON "Cancel" ID addSystemCancel AT (prevright+5 prevtop auto auto) FONT 0
+    GRAFFITISTATEINDICATOR AT (140 65)
+END
+
+NAVIGATION ID makeNewSystem
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID addSystemName
+    NAVIGATIONMAP
+	ROW 	addSystemName FORCEINTERACTION
+	ROW 	addSystemOk
+		addSystemCancel
+    END
+
+FORM ID generatePassword AT (2 40 156 118)
+HELPID generatePasswordHelp
+MODAL
+BEGIN
+    TITLE "Generate Password"
+    LABEL "Length:" AUTOID AT (15 20) FONT 2
+
+    POPUPTRIGGER "8" ID generatePasswordPopupTrigger AT (65 21 25 13) 
+    LIST "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "32" ID generatePasswordPopupList AT  (64 20 25 70) NONUSABLE FONT 0 VISIBLEITEMS 10
+    POPUPLIST ID generatePasswordPopupTrigger generatePasswordPopupList 
+
+    LABEL "Type:" AUTOID AT (15 37) FONT 2
+    CHECKBOX "Numeric" ID pwNum AT (20 55 100 12) FONT 0
+    CHECKBOX "Alpha-Num" ID pwAlNum AT (20 67 100 12) FONT 0
+    CHECKBOX "Alpha-Num w/ Meta" ID pwAlNumM AT (20 79 100 12) FONT 0
+    BUTTON "OK" ID generatePasswordOk AT (15 103 auto auto) FONT 0
+    BUTTON "Cancel" ID generatePasswordCancel AT (prevright+5 prevtop auto auto) FONT 0
+    GRAFFITISTATEINDICATOR AT (137 103)
+END
+
+FORM ID  ChangePasswordForm AT (0 0 160 160)  
+MENUID EditOnlyMenuID
+BEGIN
+    TITLE "Password Change "
+    LABEL "Current Password:" AUTOID AT (15 20) FONT 1 
+    FIELD ID ChangePasswordCurrentField AT (15 35 130 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 28
+
+    LABEL "New Password:" AUTOID AT (15 50) FONT 1 
+    FIELD ID ChangePasswordNewField AT (15 65 130 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 28
+    
+    LABEL "Confirm:" AUTOID AT (15 80) FONT 1 
+    FIELD ID ChangePasswordField AT (15 95 130 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 28
+
+    BUTTON "OK" ID ChangePasswordOk AT (15 147 auto auto) FONT 0
+    BUTTON "Cancel" ID ChangePasswordCancel AT (prevright+5 prevtop auto auto) FONT 0
+    GRAFFITISTATEINDICATOR AT (148 150)
+END
+
+NAVIGATION ID ChangePasswordForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID ChangePasswordCurrentField
+    NAVIGATIONMAP
+	ROW 	ChangePasswordCurrentField
+	ROW 	ChangePasswordNewField
+	ROW 	ChangePasswordField
+	ROW 	ChangePasswordOk
+		ChangePasswordCancel
+    END
+    
+FORM ID preferenceScreen AT (2 10 156 148)
+HELPID preferenceScreenHelp
+MODAL
+BEGIN
+    TITLE "Strip Preferences"
+    LABEL "Sort By:" AUTOID AT (15 15) FONT 1
+    CHECKBOX "Account Name" ID prSAN AT (prevleft+5 prevbottom+1 auto auto) FONT 0
+    CHECKBOX "Account System" ID prSAT AT (prevleft prevbottom+1 auto auto) FONT 0
+
+    LABEL "Display Order:" AUTOID AT (15 prevbottom+3) FONT 1
+    CHECKBOX "Account Name First" ID prOAN AT (prevleft+5 prevbottom+1 auto auto) FONT 0
+    CHECKBOX "Account System First" ID prOAT AT (prevleft prevbottom+1 auto auto) FONT 0
+    
+	CHECKBOX "Enable Smart Beaming" ID prSB AT (15 prevbottom+3 auto auto) FONT 0
+	CHECKBOX "Lock on Power Off" ID poLock AT (prevleft prevbottom+1 auto auto) FONT 0
+    BUTTON "OK" ID preferenceScreenOk AT (15 prevbottom+3 auto auto) FONT 0
+    BUTTON "Cancel" ID preferenceScreenCancel AT (prevright+3 prevtop auto auto) FONT 0
+END
+
+
+FORM ID  PasswordForm AT (0 0 160 160)  
+MENUID PasswordMenuID
+BEGIN
+    TITLE "STRIP Login"
+		FORMBITMAP AT (5 23) BITMAP ZeteticLogo
+    LABEL "Strip 2.0" AUTOID AT (center 62)  FONT 2
+    LABEL "(Secure Tool for Recalling" AUTOID AT (center prevbottom+1) FONT 0
+    LABEL "Important Passwords)" AUTOID AT (center prevbottom) FONT 0
+
+    LABEL "Enter Passphrase:" AUTOID AT (2 prevbottom+1) FONT 1 
+    FIELD ID PasswordField AT (prevleft prevbottom+1 148-prevleft 15) LEFTALIGN FONT 0 MAXCHARS 100 MULTIPLELINES HASSCROLLBAR EDITABLE USABLE UNDERLINED
+    BUTTON "\022" ID PasswordUp AT (150 PREVTOP-5 8 AUTO) USABLE FONT 3 NOFRAME
+    BUTTON "\022" ID PasswordDown AT (150 PREVTOP+11 8 AUTO) USABLE FONT 3 NOFRAME
+    BUTTON "OK" ID PasswordOk AT (center prevbottom+1 auto auto) FONT 0
+    CHECKBOX "Password Echo Off" ID EchoOffCheckbox AT (center prevbottom+3 100 12) FONT 0
+    GRAFFITISTATEINDICATOR AT (140 150)
+END
+
+NAVIGATION ID PasswordForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID PasswordField
+    NAVIGATIONMAP
+	ROW 	PasswordField FORCEINTERACTION 
+	ROW 	PasswordOk
+	ROW 	EchoOffCheckbox
+    END
+    
+FORM ID  EditSystemForm AT (2 80 156 78)  
+HELPID systemHelp
+MENUID EditOnlyMenuID 
+MODAL                                           
+BEGIN
+    TITLE "Edit Category"
+    LABEL "Name:" AUTOID AT (5 20) FONT 2 
+    FIELD ID EditSystemName AT (5 35 145 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 28
+    BUTTON "Done" ID editSystemOk AT       (5 60 auto auto) FONT 0
+    BUTTON "Cancel" ID editSystemCancel AT (prevright+5 prevtop auto auto) FONT 0
+    BUTTON "Delete" ID DeleteSystem AT  (prevright+5 prevtop auto auto) FONT 0
+    GRAFFITISTATEINDICATOR AT (145 65)
+END
+
+NAVIGATION ID EditSystemForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID EditSystemName
+    NAVIGATIONMAP
+	ROW	EditSystemName
+	ROW 	editSystemOk 
+		editSystemCancel
+		DeleteSystem
+    END
+    
+FORM ID  StripAccountForm AT (0 0 160 160)
+MENUID AccountMenuID 
+BEGIN
+    TITLE "Accounts"
+		
+    POPUPTRIGGER "" ID AccountSystemPopupTrigger AT (50 1 AUTO AUTO) LEFTANCHOR FONT 0
+    POPUPLIST ID AccountSystemPopupTrigger SystemList
+    LIST "" ID SystemList AT (prevleft 1 110 AUTO) NONUSABLE FONT 0
+
+//    LABEL "Category:" AUTOID AT (1 20) FONT 1 
+//    BUTTON "Edit Cat" ID EditSystem AT (105 18 auto auto) FONT 0
+//    FIELD ID AccountSystemName AT (1 32 155 13) NONEDITABLE LEFTALIGN FONT 1 MAXCHARS 28
+    LIST "" ID accountList AT (1 16 158 122) FONT 0 SEARCH
+//    BUTTON "Done" ID DoneAccount AT (15 147 auto auto) FONT 0
+    BUTTON "New Account" ID NewAccount AT (1 prevbottom+5 auto auto) FONT 0 
+    BUTTON "New Category" ID NewCategory AT (prevright+4 prevtop auto auto) FONT 0
+END
+
+NAVIGATION ID StripAccountForm
+  INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+  INITIALOBJECTID accountList
+  NAVIGATIONMAP
+	ROW 	AccountSystemPopupTrigger
+//	ROW 	EditSystem
+	ROW	accountList FORCEINTERACTION
+	ROW	NewAccount 
+			NewCategory
+    END
+
+FORM ID  makeNewAccount AT (0 0 160 160)
+USABLE
+SAVEBEHIND
+MENUID EditMenuID
+BEGIN
+    TITLE "Add Account"
+
+    POPUPTRIGGER "System:" ID naSystemTrigger AT (1 16 110 AUTO) LEFTANCHOR FONT 0
+    LIST 	
+		"System:" "" "Computer:" "Website:" "URL:" "Application:" "Bank:" "Company:"
+		"Credit Card:" "Name:" 
+		ID naSystemList AT (prevleft prevtop 120 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID naSystemTrigger naSystemList
+    FIELD ID addAccountType AT (prevleft 31 158 AUTO ) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 32 
+
+    POPUPTRIGGER "Login:" ID naLoginTrigger AT (prevleft prevbottom+1 110 AUTO) LEFTANCHOR FONT 0
+    LIST  
+		"Login:" "" "ID#:" "Account #" "Version #:" "Challenge:" 
+		ID naLoginList AT (prevleft prevtop 120 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID naLoginTrigger naLoginList
+    FIELD ID addAccountUsername AT (prevleft 57 158 AUTO ) usable editable singleline UNDERLINED LEFTALIGN FONT 0 MAXCHARS 32
+
+    POPUPTRIGGER "Service:" ID naServiceTrigger AT (prevleft prevbottom+1 110 AUTO) LEFTANCHOR FONT 0
+    LIST 
+		"Service:" "" "Application:" "Expiration Date:" "Contact:" "E-Mail Address:" 
+		"Phone #:" "Owner:" "URL:" "Document:" "Birthdate:"  
+		ID naServiceList AT (prevleft prevtop 120 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID naServiceTrigger naServiceList
+    FIELD ID addAccountService AT (prevleft 83 158 AUTO ) usable editable singleline UNDERLINED LEFTALIGN FONT 0 MAXCHARS 32
+
+    POPUPTRIGGER "Password:" ID naPasswordTrigger AT (prevleft prevbottom+3 60 AUTO) LEFTANCHOR FONT 0
+    LIST 
+		"Password:" "" "Secret Key:" "Pin #:" "Serial #:" "Response:" "SSN:"
+		ID naPasswordList AT (prevleft prevtop 70 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID naPasswordTrigger naPasswordList
+
+    BUTTON "Generate" ID generatePWButton AT (prevright+15 prevtop-1 auto auto) FONT 0
+    FIELD ID addAccountPassword AT (1 prevbottom+2 150 30 ) UNDERLINED MULTIPLELINES LEFTALIGN FONT 2 MAXCHARS 200
+    SCROLLBAR ID addAccountPasswordScrollbar AT (prevright+2 prevtop 7 30) VALUE 0 MIN 0 MAX 0 PAGESIZE 0  
+
+    BUTTON "Done" ID addAccountOk AT             (1  147 auto auto) FONT 0
+    BUTTON "Cancel" ID addAccountCancel AT       (prevright+3 prevtop AUTO AUTO) FONT 0
+    BUTTON "Note" ID AddAccountCommentButton AT  (prevright+3 prevtop AUTO AUTO)
+    GRAFFITISTATEINDICATOR AT (150 150)
+END
+
+NAVIGATION ID makeNewAccount
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID addAccountType
+    NAVIGATIONMAP
+	ROW 	naSystemTrigger
+	ROW 	addAccountType
+	ROW	naLoginTrigger
+	ROW	addAccountUsername
+	ROW 	naServiceTrigger
+	ROW	addAccountService
+	ROW	naPasswordTrigger
+		generatePWButton
+	ROW	addAccountPassword
+	ROW	addAccountOk
+		addAccountCancel
+		AddAccountCommentButton
+    END
+
+FORM ID  EditAccountForm AT (0 0 160 160)  
+MENUID EditMenuID 
+BEGIN
+    TITLE "Edit"
+
+    POPUPTRIGGER "" ID EditAccountPopupTrigger AT (50 1 auto auto)  leftanchor FONT 0  
+		POPUPLIST ID EditAccountPopupTrigger EditAccountPopupList
+    LIST "" ID EditAccountPopupList AT (prevleft 1 140 auto) NONUSABLE FONT 0 
+
+    POPUPTRIGGER "System:" ID eaSystemTrigger AT (1 16 110 AUTO) LEFTANCHOR FONT 0
+    LIST 
+		"System:" "" "Computer:" "Website:" "URL:" "Application:" "Bank:" "Company:"
+		"Credit Card:" "Name:" 
+		ID eaSystemList AT (prevleft prevtop 120 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID eaSystemTrigger eaSystemList
+    FIELD ID EditAccountType AT (prevleft 28 158 13 ) USABLE EDITABLE UNDERLINED LEFTALIGN FONT 0 MAXCHARS  32
+
+		POPUPTRIGGER "Login:" ID eaLoginTrigger AT (prevleft prevbottom 110 AUTO) LEFTANCHOR FONT 0
+    LIST 
+		"Login:" "" "ID#:" "Account #" "Version #:" "Challenge:" 
+		ID eaLoginList AT (prevleft prevtop 120 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID eaLoginTrigger eaLoginList
+    FIELD ID EditAccountUsername AT (prevleft 55 158 13 ) USABLE EDITABLE UNDERLINED LEFTALIGN FONT 0 MAXCHARS 32 
+
+    POPUPTRIGGER "Service:" ID eaServiceTrigger AT (prevleft prevbottom 110 AUTO) LEFTANCHOR FONT 0
+    LIST 
+		"Service:" "" "Application:" "Expiration Date:" "Contact:" "E-Mail Address:" 
+		"Phone #:" "Owner:" "URL:" "Document:" "Birthdate:"  
+		ID eaServiceList AT (prevleft prevtop 120 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID eaServiceTrigger eaServiceList
+    FIELD ID EditAccountService AT (prevleft 80 158 AUTO ) usable editable UNDERLINED LEFTALIGN FONT 0 MAXCHARS 32
+
+    POPUPTRIGGER "Password:" ID eaPasswordTrigger AT (prevleft prevbottom+2 60 AUTO) LEFTANCHOR FONT 0
+    LIST 
+		"Password:" "" "Secret Key:" "Pin #:" "Serial #:" "Response:" "SSN:"
+		ID eaPasswordList AT (prevleft prevtop 70 AUTO) NONUSABLE VISIBLEITEMS 5 FONT 0
+    POPUPLIST ID eaPasswordTrigger eaPasswordList
+
+    BUTTON "Generate" ID generatePWButton AT (prevright+15 prevtop-1 auto auto) FONT 0
+    FIELD ID EditAccountPassword AT (1 prevbottom+1 150 30 ) USABLE EDITABLE UNDERLINED MULTIPLELINES LEFTALIGN FONT 2 MAXCHARS 200  
+    SCROLLBAR ID EditAccountPasswordScrollbar AT (prevright+2 prevtop 7 30) VALUE 0 MIN 0 MAX 0 PAGESIZE 0   
+
+    BUTTON "OK" ID editAccountOk AT            (1 147 auto auto) FONT 0
+    BUTTON "Cancel" ID editAccountCancel AT      (prevright+3 prevtop auto auto) FONT 0
+    BUTTON "Note" ID EditAccountCommentButton AT (prevright+3 prevtop auto auto)
+    BUTTON "Delete" ID DeleteAccount AT       (prevright+3 prevtop auto auto) FONT 0
+    GRAFFITISTATEINDICATOR AT (150 150)
+END
+
+NAVIGATION ID EditAccountForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID EditAccountType
+    NAVIGATIONMAP
+	ROW 	EditAccountPopupTrigger
+	ROW 	eaSystemTrigger
+	ROW 	EditAccountType
+	ROW	eaLoginTrigger
+	ROW	EditAccountUsername
+	ROW	eaServiceTrigger
+	ROW	EditAccountService
+	ROW	eaPasswordTrigger
+		generatePWButton
+	ROW	EditAccountPassword
+	ROW	editAccountOk
+		editAccountCancel
+		EditAccountCommentButton
+		DeleteAccount
+    END
+
+
+    
+FORM ID  ShowAccount AT (0 0 160 160) 
+MENUID ShowMenuID 
+BEGIN
+    TITLE "Account"
+//	LABEL "Category: " AUTOID AT (1 16) FONT 1
+//    FIELD ID ShowAccountSystemName AT (prevright+5 prevtop 159-prevright-5 auto) NONEDITABLE LEFTALIGN FONT 1 MAXCHARS 28 
+    FIELD ID ShowAccountSystemName AT (50 1 160-50 auto) NONEDITABLE LEFTALIGN FONT 0 MAXCHARS 28 
+
+    FIELD ID AccountTypeLabel AT (1 prevbottom+1 156 auto ) NONEDITABLE LEFTALIGN FONT 1  MAXCHARS 32 
+    FIELD ID AccountType AT (prevleft+2 prevbottom 156 auto ) NONEDITABLE LEFTALIGN FONT 0  MAXCHARS 32 
+    FIELD ID AccountUsernameLabel AT (1 prevbottom+1 156 auto ) NONEDITABLE LEFTALIGN FONT 1  MAXCHARS 32 
+    FIELD ID AccountUsername AT (prevleft+2 prevbottom 156 auto ) LEFTALIGN NONEDITABLE  FONT 0 MAXCHARS 32 
+    FIELD ID AccountServiceLabel AT (1 prevbottom+1 156 auto ) NONEDITABLE LEFTALIGN FONT 1  MAXCHARS 32 
+    FIELD ID AccountService AT (prevleft+2 prevbottom 156 auto ) LEFTALIGN NONEDITABLE  FONT 0 MAXCHARS 32 
+    FIELD ID AccountPasswordLabel AT (1 prevbottom+1 156 auto ) NONEDITABLE LEFTALIGN FONT 1  MAXCHARS 32 
+    FIELD ID AccountPassword AT (prevleft+2 prevbottom 148 30 ) LEFTALIGN MULTIPLELINES NONEDITABLE FONT 2 MAXCHARS 200  
+    SCROLLBAR ID AccountPasswordScrollbar AT (prevright+2 prevtop 7 30) VALUE 0 MIN 0 MAX 0 PAGESIZE 0  
+
+    BUTTON "Done" ID AccountClose AT (1 147 auto auto) FONT 0
+    BUTTON "Edit" ID EditAccount AT (prevright+3 prevtop auto auto) FONT 0
+    BUTTON "S/Key" ID AccountSKey AT (prevright+3 prevtop auto auto) FONT 0
+    BUTTON "Note" ID AccountCommentButton AT(prevright+3 prevtop auto auto) NONUSABLE
+END
+
+NAVIGATION ID ShowAccount
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID AccountClose
+    NAVIGATIONMAP
+	ROW	AccountClose
+		EditAccount
+		AccountSKey
+		AccountCommentButton
+    END
+
+FORM ID StripSKeyForm AT (0 0 160 160)
+MENUID ShowMenuID
+BEGIN
+    TITLE "S/Key Calculator"
+
+    LABEL "Series:" AUTOID AT (5 15) FONT 1
+    FIELD ID SKeySeries AT (prevright+4 prevtop 20 AUTO) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 4
+
+    LABEL "Hash:" AUTOID AT (prevright+4 prevtop) FONT 1
+    POPUPTRIGGER "MD5" ID SKeyHashTrigger AT (prevright+4 prevtop 40 AUTO) LEFTANCHOR FONT 0 
+    LIST "MD5" "MD4" ID SKeyHashList AT (prevleft prevtop 30 AUTO) NONUSABLE VISIBLEITEMS 2 FONT 0 
+    POPUPLIST ID SKeyHashTrigger SKeyHashList
+ 
+    LABEL "Key:" AUTOID AT (5 30) FONT 1
+    FIELD ID SKeyKey AT (prevright+4 prevtop 70 AUTO) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 20
+
+    LABEL "Response:" AUTOID AT (5 45) FONT 1
+    FIELD ID SKeyResponse AT (5 60 150 30) UNDERLINED MULTIPLELINES LEFTALIGN NONEDITABLE FONT 0 MAXCHARS 100
+
+    LABEL "Hex:" AUTOID AT (5 90) FONT 1
+    FIELD ID SKeyHex AT (5 105 150 15) UNDERLINED LEFTALIGN NONEDITABLE FONT 0 MAXCHARS 100
+
+    BUTTON "Done" ID SKeyDone AT (5 140 AUTO AUTO) FONT 0
+    BUTTON "Cancel" ID SKeyCancel AT (prevright+3 prevtop AUTO AUTO) FONT 0
+    BUTTON "Calc" ID SKeyCalc AT (prevright+3 prevtop AUTO AUTO) FONT 0
+
+    GRAFFITISTATEINDICATOR AT (140 150)
+END
+
+NAVIGATION ID StripSKeyForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID SKeyDone
+    NAVIGATIONMAP
+	ROW	SKeySeries
+	 	SKeyHashTrigger
+	ROW	SKeyKey
+	ROW	SKeyResponse
+	ROW	SKeyHex
+	ROW	SKeyDone
+		SKeyCancel
+		SKeyCalc
+    END
+
+FORM ID EditAccountCommentForm AT (0 0 160 160)
+MENUID EditOnlyMenuID
+BEGIN
+    TITLE "Notes"
+    FIELD ID EditAccountComment AT (10 17 140 125) UNDERLINED MULTIPLELINES LEFTALIGN FONT 0 MAXCHARS 1000
+    SCROLLBAR ID EditAccountScrollbar AT (153 18 7 121) VALUE 0 MIN 0 MAX 0 PAGESIZE 0 
+    BUTTON "Done" ID EditCommentOk At (1 147 auto auto) leftanchor FONT 0
+    GRAFFITISTATEINDICATOR AT (150 150)
+END
+
+NAVIGATION ID EditAccountCommentForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID EditAccountComment
+    NAVIGATIONMAP
+	ROW	EditAccountComment
+	ROW 	EditCommentOk
+    END
+
+FORM ID accountInfoDialog AT (2 2 156 156)
+MODAL
+BEGIN
+	TITLE "Account MetaData"
+    LABEL "Signature:" AUTOID AT (5 15) FONT 1
+    FIELD ID AccountSig0 AT (prevleft+1 prevbottom+1 145 auto ) NONEDITABLE LEFTALIGN FONT 0 
+    FIELD ID AccountSig1 AT (prevleft prevbottom 145 auto ) NONEDITABLE LEFTALIGN FONT 0 
+    FIELD ID AccountSig2 AT (prevleft prevbottom 145 auto ) NONEDITABLE LEFTALIGN FONT 0
+
+	LABEL "Category ID:" AUTOID AT (5 prevbottom+2) FONT 1
+	FIELD ID SystemIDField AT (prevright+4 prevtop 60 auto ) LEFTALIGN FONT 0 NONEDITABLE LEFTALIGN MAXCHARS 7
+	LABEL "Account  ID:" AUTOID AT (5 prevbottom) FONT 1
+	FIELD ID AccountIDField  AT (prevright+4 prevtop 60 auto) LEFTALIGN FONT 0 NONEDITABLE LEFTALIGN MAXCHARS 7
+
+	LABEL "Account Last Modified:" AUTOID AT (5 prevbottom+2) FONT 1
+	FIELD ID AccountModifiedField AT (prevleft+3 prevbottom 140 auto ) LEFTALIGN FONT 0 NONEDITABLE LEFTALIGN MAXCHARS 25
+	LABEL "Last Password Change:" AUTOID AT (5 prevbottom) FONT 1
+	FIELD ID PasswordModifiedField AT (prevleft+3 prevbottom 140 auto ) LEFTALIGN FONT 0 NONEDITABLE LEFTALIGN MAXCHARS 25
+    
+    BUTTON "Ok" ID accountInfoDialogOk AT (5 140 auto auto) FONT 0
+END
+
+NAVIGATION ID accountInfoDialog
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID EditAccountComment
+    NAVIGATIONMAP
+	ROW	accountInfoDialogOk
+    END
+
+
+FORM ID pleaseWait AT (40 60 80 25) 
+MODAL
+SAVEBEHIND
+BEGIN
+	LABEL "Working..." AUTOID AT (center center) FONT 2
+END
+
+
+FORM ID aboutAlert AT (2 2 156 156)
+HELPID aboutHelp
+MODAL
+SAVEBEHIND
+BEGIN
+    TITLE "About STRIP"
+    LABEL "Strip 2.0" AUTOID AT (center 20 ) FONT 2
+    LABEL "(Secure Tool for Recalling" AUTOID AT (center prevbottom+1) FONT 0
+    LABEL "Important Passwords)" AUTOID AT (center prevbottom) FONT 0
+    LABEL "Copyright ©1999-2005" AUTOID AT (center prevbottom+5) FONT 0 
+    LABEL "Identicentric / ZETETIC LLC" AUTOID AT (center prevbottom+5) FONT 0 
+    LABEL "http://www.identicentric.com/" AUTOID AT (center prevbottom) FONT 0
+    BUTTON "OK"  AboutOk AT (center prevbottom+5 auto auto) FONT 0
+END
+
+NAVIGATION ID aboutAlert
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID AboutOk
+    NAVIGATIONMAP
+	ROW	AboutOk
+    END
+
+FORM ID  RegisterForm AT (2 60 156 98)  
+HELPID RegisterHelp
+MENUID EditOnlyMenuID 
+MODAL                                           
+BEGIN
+    TITLE "Register Strip"
+    LABEL "Email:" AUTOID AT (5 20) FONT 0 
+    FIELD ID RegisterEmail AT (prevleft prevbottom+2 145 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 100
+    LABEL "Registration Code:" AUTOID AT (prevleft prevbottom+2) FONT 0 
+    FIELD ID RegisterCode AT (prevleft prevbottom+2 145 13) UNDERLINED LEFTALIGN FONT 0 MAXCHARS 100
+    BUTTON "Done" ID RegisterOk AT       (5 prevbottom+5 auto auto) FONT 0
+    BUTTON "Cancel" ID RegisterCancel AT (prevright+5 prevtop auto auto) FONT 0
+    GRAFFITISTATEINDICATOR AT (145 65)
+END
+
+NAVIGATION ID RegisterForm
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID RegisterEmail
+    NAVIGATIONMAP
+	ROW	RegisterEmail
+	ROW RegisterCode
+	ROW RegisterOk
+			RegisterCancel
+    END
+    
+ALERT ID RegenAlert
+CONFIRMATION
+BEGIN
+TITLE "Regenerate Signature"
+MESSAGE "^1"
+BUTTONS "Regenerate" "Cancel"
+END 
+
+ALERT ID DeleteAlert
+CONFIRMATION
+BEGIN
+TITLE "Delete Record?"
+MESSAGE "^1"
+BUTTONS "OK" "Cancel"
+END 
+
+
+ALERT ID infoDialog
+INFORMATION
+BEGIN
+TITLE "System/Account Info."
+MESSAGE "Stored Systems: ^1 \nStored Accounts: ^2"
+BUTTONS "OK"
+END
+
+ALERT ID GenericError
+WARNING
+BEGIN
+    TITLE "Alert!!!!"
+    MESSAGE "^1 ^2 ^3" 
+    BUTTONS "OK"
+END
+
+FORM ID ChooseBeamLocation AT (0 0 160 160)
+NOFRAME
+BEGIN
+  TITLE "Choose Beam Location"
+  LABEL "Please select a category" AUTOID AT (5 25) FONT 2
+  LABEL "to hold the beamed" AUTOID AT (5 PREVBOTTOM+1) FONT 2
+  LABEL "accounts" AUTOID AT (5 PREVBOTTOM+1) FONT 2
+  POPUPTRIGGER "" ID ChooseBeamLocationPopupTrigger AT (5 prevbottom+6 140 13) FONT 0 LEFTANCHOR
+  POPUPLIST ID ChooseBeamLocationPopupTrigger ChooseBeamLocationPopupList
+  LIST "" ID ChooseBeamLocationPopupList AT (prevleft prevtop-1 141 AUTO) FONT 0 NONUSABLE VISIBLEITEMS 4
+  BUTTON "Ok" BeamLocationOk AT (15 140 AUTO AUTO) FONT 0
+END        
+
+NAVIGATION ID ChooseBeamLocation
+    INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+    INITIALOBJECTID ChooseBeamLocationPopupTrigger
+    NAVIGATIONMAP
+	ROW	ChooseBeamLocationPopupTrigger
+	ROW	BeamLocationOk
+    END
+
+
+STRING ID FindHeaderString "Strip 2.0"
+VERSION ID versionId "2.0"
+//ICON "Strip.bmp"
+//ICONCOLOR "Strip-256.bmp" 
+ICONFAMILY "Strip.bmp" "" "" "Strip-Hi.bmp"
+SMALLICONFAMILY "StripSmall.bmp" "" "" "StripSmall-256.bmp"
+//SMALLICON "StripSmall.bmp"
+BITMAPCOLOR ID ZeteticLogo "identicentric-onwhite.bmp" 
+STRING ID aboutHelp "This program is free software; you can redistribute it and/or modify "\
+"it under the terms of the GNU General Public License as published by "\
+"the Free Software Foundation; either version 2 of the License, or "\
+"(at your option) any later version. "\
+"\n\nThis program is distributed in the hope that it will be useful, "\
+"but WITHOUT ANY WARRANTY; without even the implied warranty of "\
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "\
+"GNU General Public License for more details. "
+
+STRING ID RegisterHelp 				"By registering this program you can help support its ongoing development. " \	
+															"By purchasing a registration code you can eliminate registration nag screens. " \
+															"In additon, registration will also entitle you " \
+															"to technical support and a user's manual. For more information, or to purchase a code "\
+															"please visit: \nhttp://www.zetetic.net/\n\n" \
+															"If you have already purchased a registration code, please enter your email address "\
+															" and the code provided in your registration email from ZETETIC LLC."
+
+STRING ID systemHelp "Enter the name of the system or category into the field. "\
+"Null strings are not valid system/category names. There is no limit to the number "\
+"of systems that Strip can store. System names ARE encrypted when stored. " 
+
+STRING ID commentHelp "Any free form comments are valid. Comments ARE encrypted when stored."
+
+STRING ID preferenceScreenHelp  "This screen will allow you to change some Strip preferences. "\
+"\n* Sort Order -  select the text with which you wish Strip to sort your account database.\n\n"\
+"* Display Order - select which text you wish to appear first in the account list.\n\n"\
+"* Power Off Lock - If you wish Strip to lock itself when you press the power button make sure this"\
+" box is checked."
+
+STRING ID generatePasswordHelp "This will generate a new random password for this account. "\
+"Select the length of the password that you desire, the type, and click \"Generate\"." 
+

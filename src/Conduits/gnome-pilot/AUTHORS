@@ -1,0 +1,10 @@
+AUTHORS -- strip-conduit 0.1
+-----------------------------------------
+
+Ron Pedde <ron@pedde.com>
+	initial implementation of:
+	strip-conduit-capplet.c
+	strip-accounts-conduit.c
+	automake/autoconf configuration
+
+

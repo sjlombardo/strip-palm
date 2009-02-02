@@ -1,0 +1,112 @@
+PACKAGE		=@PACKAGE@
+VERSION		=@VERSION@
+
+TYPE		=@TYPE@
+
+APP		=Strip
+ICONTEXT 	="Strip"
+APPID 		=SJLO
+
+PRC 		=$(APP).prc
+RCP		=$(APP).rcp
+SRC		=$(APP).c
+
+CRYPTDIR	=../Crypto
+
+DEBUG		=#-g -DDEBUG -DLOCAL_IR
+DEFINES		=@DEFINES@ 
+INCLUDES	=-I $(CRYPTDIR)
+CFLAGS		=-O2 -Werror -Wall $(INCLUDES)
+
+SEGMENTDEF	=@SEGMENTDEF@
+MULTISEG_LD	=@MULTISEG_LD@
+MULTISEG_S	=@MULTISEG_S@
+
+MULTISEGSTUBGEN	=@MULTISEGSTUBGEN@
+GCC		=@GCC@
+HOST_CC		=@HOST_CC@
+PILRC		=@PILRC@
+OBJRES		=@OBJRES@
+BUILD_PRC	=@BUILD_PRC@
+AS		=@AS@ -m68000 -mno-68881 -l
+
+PILOT_XFER	=@PILOT_XFER@
+CTAGS		=@CTAGS@
+AUTOCONF	=@AUTOCONF@
+
+OTPDB		=StripOTP-SJLO.pdb
+OTPDBTYPE	=SKey
+OTPTXT          =otplist.txt
+
+CC		=$(GCC) $(DEBUG) $(DEFINES)
+
+DRIVERFILES	=$(CRYPTDIR)/sha256_driver.c $(CRYPTDIR)/rijndael_driver.c $(CRYPTDIR)/rijndael_cbc.c
+
+CRYPTFILES	= $(CRYPTDIR)/rijndael-256.c $(CRYPTDIR)/sha256.c $(CRYPTDIR)/random.c
+
+OTHERFILES	= storage_util.c skey.c account_hash.c register.c hex2bin.c
+		 	
+REGCODEFILES = register.c $(CRYPTDIR)/sha256_driver.c  $(CRYPTDIR)/sha256.c hex2bin.c
+
+OBJS = ${MULTISEG_S:.s=.o} ${SRC:.c=.o} ${OTHERFILES:.c=.o} ${CRYPTFILES:.c=.o} ${DRIVERFILES:.c=.o}
+	
+#OTHERFILES	=$(CRYPTDIR)/md5_palm_driver.c $(CRYPTDIR)/idea.c $(CRYPTDIR)/idea_driver.c skey.c $(CRYPTDIR)/ripemd_driver.c $(CRYPTDIR)/ripemd.c $(CRYPTDIR)/hybrid_md_driver.c
+
+all:		$(PRC) $(OTPDB) genregcode
+
+$(OTPDB):	pdbmake
+		./pdbmake -a -c $(APPID) -t $(OTPDBTYPE) $(OTPTXT) $(OTPDB)
+
+pdbmake:	pdbmake.c
+		$(HOST_CC) -o $@ $<
+
+genregcode:	genregcode.c
+		$(HOST_CC) $(DEBUG) $(DEFINES) -DNOPILOT -DCONVERT_ENDIANNESS -I$(CRYPTDIR) $(REGCODEFILES) -o $@ $< 
+			
+
+ifeq ($(TYPE),palmos-coff)
+$(PRC): rcp.stamp code.stamp
+	$(BUILD_PRC) $@ $(ICONTEXT) $(APPID) *.$(APP).grc *.bin
+	ls -l *.prc
+else
+$(PRC): rcp.stamp $(APP)
+	$(BUILD_PRC) -o $@ -n $(ICONTEXT) -c $(APPID) $(SEGMENTDEF) $(APP) *.bin
+	ls -l *.prc
+endif
+
+code.stamp: $(APP)
+	$(OBJRES) $(APP) $(SEGMENTDEF)
+	touch $@
+
+
+rcp.stamp: $(RCP)
+	echo > $(APP)Rsc.h
+	$(PILRC) -q $^ $(BINDIR) 
+	@touch $@
+
+
+$(APP): $(OBJS) $(MULTISEG_LD)
+ifeq ($(TYPE),palmos-coff)
+	$(CC) -T $(MULTISEG_LD) $(OBJS) -o $@
+else
+	$(CC) $(OBJS) -o $@ $(MULTISEG_LD)
+endif
+
+$(MULTISEG_LD) $(MULTISEG_S):
+	$(MULTISEGSTUBGEN) $(SEGMENTDEF)
+
+depend dep: ;
+		$(CC) -M $(SRC) > .depend
+
+clean:
+	rm -rf $(OBJS) $(APP) *.bin *.grc *.prc *.stamp *~ *.BAK \
+	$(MULTISEG_LD) $(MULTISEG_S) $(MULTISEG_S:.s=.o) pdbmake pdbmake.exe $(OTPDB) \
+	genregcode genregcode.exe *.stackdump
+
+distclean: clean
+	rm -f Makefile config.* .depend
+ifeq ($(TYPE),palmos)
+	rm -f $(SEGMENTDEF)
+endif
+
+-include .depend

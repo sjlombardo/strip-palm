@@ -1,0 +1,64 @@
+$Id: README,v 1.1.1.1 2005/08/08 14:51:26 lombardo Exp $
+
+
+Howdy.
+
+If you are reading this, you are probably wondering how to make this
+work.  
+
+Good question.
+
+Mostly, you should be able to get the GDBM libraries for win32 from
+Roth consulting (http://www.roth.net/libs/gdbm) and stick it in your
+libs path somewhere.
+
+Once you have that, compile the source.  The project files are for
+Visual Studio 6.0.  You might be able to make it work with mingw, or
+cygwin, or whatever.  Try it.  Fix it.  Good luck & send patches.
+
+There is no installer to make the resultant .DLL part of the sync
+process... you'll have to use the sync manager tool (CondCfg.exe) that
+comes with the conduit sdk to manually install the .DLL.
+
+To do that, bring up CondCfg, hit "Add", and enter the following info:
+
+Conduit Type:  Application
+Conduit:  c:\path\to\stripcon.dll
+Creator ID: SJLO
+Directory: Strip
+File: <blank>
+Remote Database: <blank>
+Name: <blank>
+UserName: <blank>
+Priority: 2
+Information: <blank>
+Class Name: <blank>
+Class Path: <blank>
+
+Hit Ok.
+
+Go into "Custom" in the hotsync manager, and set the "Strip Conduit"
+conduit to "Handheld overwrites desktop".
+
+Sync.
+
+You should see messages in your hotsync log saying something like:
+
+Synchronized x records from StripAccounts-SJLO
+Synchronized 1 records from StripPassword-SJLO
+Synchronized x records from StripSystems-SJLO
+
+That's a good sign.  You should be able to go into your palm directory 
+(c:\palm\<username> for me) and see a folder called "strip".  Inside
+should be three gdbm files with the strip accounts in them.
+
+Obviously this is completely broken... there really should be record
+flags along with the handheld records, including a "new" flag, an "updated"
+flag, etc.  Not to mention a real installer program.  This is really nothing
+more than a quick hack to get us started in a direction.  Not even 
+necessarily the right direction, just a direction.  I really only wanted
+some gdbm files with which to start on a desktop application.
+
+Please help finish this.
+
+  -- Ron (ron@pedde.com)

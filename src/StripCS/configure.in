@@ -1,0 +1,77 @@
+dnl
+dnl $Id: configure.in,v 1.1.1.1 2005/08/08 14:51:27 lombardo Exp $
+dnl
+dnl Strip autoconf input
+dnl
+dnl
+
+AC_INIT(StripCS.c)
+
+VERSION=0.06i
+PACKAGE=StripCS
+
+AC_SUBST(VERSION)
+AC_SUBST(PACKAGE)
+
+dnl =======================================
+dnl                OPTIONS
+dnl =======================================
+TYPE=
+AC_ARG_ENABLE(palmos, [  --enable-palmos          use Palm's version of prc-tools ], TYPE=palmos)
+AC_ARG_ENABLE(palmos-coff, [  --enable-palmos-coff        use A4 based version of prc-tools ], TYPE=palmos-coff)
+
+if test "X$TYPE" = "X"; then
+	AC_PATH_PROGS(GCC, m68k-palmos-gcc m68k-palmos-coff-gcc)
+	if test "X$GCC" = "X"; then
+		AC_MSG_ERROR("Unable to find cross-compiler")
+	fi
+	TMP=`basename $GCC`
+	if test "X$TMP" = "Xm68k-palmos-gcc"; then
+		TYPE=palmos
+	else
+		TYPE=palmos-coff
+	fi
+else
+	AC_PATH_PROGS(GCC, m68k-$TYPE-gcc)
+	if test "X$GCC" = "X"; then
+		AC_MSG_ERROR("Unable to find cross-compiler")
+	fi
+fi
+
+if test "$TYPE" = "palmos"; then
+	DEFINES="$DEFINES"
+else
+	DEFINES="$DEFINES -DHAVE_GDBHOOK"
+fi
+AC_SUBST(TYPE)
+AC_SUBST(DEFINES)
+
+dnl -------------------------------------------------------------------------------------
+dnl Checking for the necessary Palm development tools
+dnl -------------------------------------------------------------------------------------
+
+AC_PATH_PROGS(OBJRES, m68k-$TYPE-obj-res obj-res)
+if test "X$OBJRES" = "X"; then
+        AC_MSG_ERROR("Unable to find obj-res")
+fi
+AC_PATH_PROG(PILRC, pilrc)
+if test "X$PILRC" = "X"; then
+        AC_MSG_ERROR("Unable to find pilrc")
+fi
+AC_PATH_PROG(BUILD_PRC, build-prc)
+if test "X$BUILD_PRC" = "X"; then
+        AC_MSG_ERROR("Unable to find build-prc")
+fi
+AC_PATH_PROG(PILOT_XFER, pilot-xfer)
+if test "X$PILOT_XFER" = "X"; then
+	AC_MSG_WARN("Unable to find pilot-xfer")
+fi
+
+AC_PATH_PROG(CTAGS, ctags, ctags)
+AC_PATH_PROG(AUTOCONF, autoconf, autoconf)
+
+dnl ===========================================================================
+
+AC_OUTPUT(Makefile)
+
+dnl ===========================================================================

@@ -1,0 +1,35 @@
+README for strip-conduit 0.1
+----------------------------
+
+This is a gnome-pilot conduit for Strip 0.6.  Sort of.  Currently,
+it only works in copy_from_pilot mode, so it actually isn't a
+conduit in the sense of actually synchronizing anything.  At this
+point, all it does is take data from the 3 strip databases and
+dump then directly to gdbm files.
+
+This is done strictly for the purpose of building a desktop
+utility for locally viewing/updating the strip database.  GDBM is
+used because a quick google search turned up a port of GDBM
+for Win32, which is an obvious next target.
+
+The desktop application I anticipate will be done in 
+wxWindows/wxGTK.  This leaves open the possibility of a Mac
+port also, once wxMac catches up.
+
+Anyway... to build this, there's a fair amount of stuff you'll
+need.  You'll need gtk, pilot-link, gnome-libs, glade-libs,
+all sorts of stuff.  I might recommend that you head to 
+helix (http://www.helixcode.com) and get updated packages
+there.  They have a cool automated updater for gnome related
+packages, and everything here appears to work with it.  
+
+With the Helix gnome desktop, configure, make and install the
+strip-conduit package with a prefix of /usr:
+
+./configure --prefix=/usr
+make; make install
+
+Once you've done that, you should be able to go into gnome control-
+center -> Peripherals -> PalmPilot -> Conduits -> Strip and
+check the 'enable' checkbox.
+

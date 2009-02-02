@@ -1,0 +1,1 @@
+gcc -g -DNOPILOT -DCONVERT_ENDIANNESS -I../Crypto register.c  ../Crypto/sha256_driver.c ../Crypto/sha256.c hex2bin.c genregcode.c -o genregcode.exe

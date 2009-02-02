@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Strip
+Comment=Synchronize Strip
+Exec=strip-conduit-control-applet --cap-id=1
+Terminal=0
+Type=Application
+

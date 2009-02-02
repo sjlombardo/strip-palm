@@ -1,0 +1,96 @@
+//  Program : Strip (Secure Tool for Recalling Important Passwords) 
+//  Description: A secure password and account manager for the Palm(t) Computing Platform 
+//  Copyright (C) 1999  Stephen J Lombardo
+//  
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  
+//  Strip has been written and developed by Stephen J Lombardo (Zetetic Enterprises) 1999
+//  
+//  Contact Info:
+//  lombardos@zetetic.net
+//  http://www.zetetic.net/
+//  Zetetic Enterprises
+//  348 Wasington Ave 
+//  Clifton NJ, 07011
+//  
+//  Bug reports and feature requests should be sent to bugs@zetetic.net.
+//  
+//  
+//  ------RSA Data Security, Inc. MD5 Message Digest Algorithm-------------
+//  Strip uses the MD5 message digest algorithm, Copyright (C) 1990, 
+//  RSA Data Security, Inc. All rights reserved. See md5.c or md5.h 
+//  for specific terms and warranty disclaimer from RSA Data Security Inc.
+//  -----------------------------------------------------------------------
+//  
+//  ------Three-way block encryption---------------------------------------
+//  Strip uses the 3-Way block encryption algoritm, Copyright (C) Joan 
+//  Daemen. All rights reserved.
+//  -----------------------------------------------------------------------
+//  
+//          <**  DO NOT EXPORT **>
+//  Strip uses strong cryptography. "3-way" is a block algoritm with a
+//  96 bit key length, and "MD5" creates a 128 bit message digest. In the 
+//  United states it is currently illegal to export products describing
+//  or incorporating encryption techniques with key lengths greater
+//  than 40 bits. It is therefore illegal to export this program in
+//  any format. Please dont get the government on my back...
+//  
+//POPUPTRIGGER "3-Way -> Idea" ID selPopupTrigger AT (15 80 130 13) LEFTANCHOR FONT 0 POPUPLIST selPopupTrigger selPopupList 
+//  
+
+#include "StripCSRsc.h"
+
+
+FORM ID  PasswordForm AT (0 0 160 160)  
+BEGIN
+    TITLE "Strip C-S"
+    LABEL "Strip Crypt-Switch 1.0" AUTOID AT (center 20 ) FONT 2    
+    LABEL "Copyright (C) 1999-2001" AUTOID AT (center 40) FONT 0 
+    LABEL "Stephen J Lombardo" AUTOID AT (center 50) FONT 0 
+    LABEL "lombardos@zetetic.net" AUTOID AT (center 60) FONT 0 
+	LIST "IDEA (i) to AES (r)" "DES (d) to AES (r)" "3-way (t) to AES (r)" ID selPopupList AT (14 73 130 40) USABLE  FONT 0 
+    LABEL "Enter Password:" AUTOID AT (15 115) FONT 1 
+    FIELD ID PasswordField AT (15 127 130 15) LEFTALIGN UNDERLINED FONT 2 MAXCHARS 20
+    BUTTON "Re-Crypt" ID PasswordOk AT (45 145 60 12) FONT 0
+    GRAFFITISTATEINDICATOR AT (140 150)
+END
+    
+
+FORM ID pleaseWait AT (40 60 80 25) 
+MODAL
+SAVEBEHIND
+BEGIN
+	LABEL "Working..." AUTOID AT (center center) FONT 2
+END
+
+ALERT ID infoDialog
+INFORMATION
+BEGIN
+TITLE "System/Account Info."
+MESSAGE "Changed Systems: ^1 \nChanged Accounts: ^2\nPress 'OK' to reset."
+BUTTONS "OK"
+END
+
+ALERT ID GenericError
+INFORMATION
+BEGIN
+    TITLE "Alert!!!!"
+    MESSAGE "^1"
+    BUTTONS "OK"
+END
+
+VERSION ID versionId "0.5"
+ICON "StripCS.bmp"
+

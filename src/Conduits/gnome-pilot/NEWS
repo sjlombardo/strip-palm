@@ -1,0 +1,7 @@
+NEWS
+
+strip-conduit 0.1
+-----------------
+Initial implementation.  Allows for copy_from_pilot sync mode only.
+does include configurable database location, and device/user independence.
+
